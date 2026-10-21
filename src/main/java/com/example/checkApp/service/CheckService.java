@@ -21,16 +21,18 @@ public class CheckService {
     private static final String RESOURCE = "Check";
 
     private final CheckRepository checkRepository;
+    private final CurrentUserService currentUserService;
 
     public CheckResponse create(CheckRequest request) {
         Check check = new Check();
+        check.setUser(currentUserService.getUser());
         apply(request, check);
         return toResponse(checkRepository.save(check));
     }
 
     @Transactional(readOnly = true)
     public List<CheckResponse> findAll() {
-        return checkRepository.findAll().stream()
+        return checkRepository.findByUserId(currentUserService.getUser().getId()).stream()
                 .map(CheckService::toResponse)
                 .toList();
     }
@@ -52,8 +54,13 @@ public class CheckService {
     }
 
     private Check getOrThrow(Long id) {
-        return checkRepository.findById(id)
+        Check check = checkRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException(RESOURCE, id));
+        Long currentUserId = currentUserService.getUser().getId();
+        if (check.getUser() == null || !currentUserId.equals(check.getUser().getId())) {
+            throw new NotFoundException(RESOURCE, id);
+        }
+        return check;
     }
 
     private static void apply(CheckRequest request, Check check) {

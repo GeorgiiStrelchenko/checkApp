@@ -9,4 +9,6 @@ import com.example.checkApp.entity.Check;
 public interface CheckRepository extends JpaRepository<Check, Long> {
 
     List<Check> findByEnabledTrue();
+
+    List<Check> findByUserId(Long userId);
 }

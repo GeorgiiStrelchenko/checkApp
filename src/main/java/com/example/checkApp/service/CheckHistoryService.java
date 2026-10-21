@@ -29,6 +29,7 @@ public class CheckHistoryService {
 
     private final CheckRepository checkRepository;
     private final CheckResultRepository checkResultRepository;
+    private final CurrentUserService currentUserService;
 
     public PageResponse<CheckResultResponse> getResults(Long checkId, int page, int size) {
         requireCheck(checkId);
@@ -69,6 +70,10 @@ public class CheckHistoryService {
     private void requireCheck(Long checkId) {
         Check check = checkRepository.findById(checkId)
                 .orElseThrow(() -> new NotFoundException("Check", checkId));
+        Long currentUserId = currentUserService.getUser().getId();
+        if (check.getUser() == null || !currentUserId.equals(check.getUser().getId())) {
+            throw new NotFoundException("Check", checkId);
+        }
     }
 
     private static CheckResultResponse toResponse(CheckResult result) {

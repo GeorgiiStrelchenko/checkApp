@@ -19,10 +19,13 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import com.example.checkApp.config.SecurityConfig;
 import com.example.checkApp.dto.request.CheckRequest;
 import com.example.checkApp.dto.response.CheckResponse;
 import com.example.checkApp.dto.response.CheckResultResponse;
@@ -34,6 +37,8 @@ import com.example.checkApp.service.CheckHistoryService;
 import com.example.checkApp.service.CheckService;
 
 @WebMvcTest(CheckController.class)
+@Import(SecurityConfig.class)
+@WithMockUser(username = "alice")
 class CheckControllerTest {
 
     private static final String VALID_BODY = """

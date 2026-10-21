@@ -2,6 +2,7 @@ package com.example.checkApp.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.when;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -12,16 +13,19 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
 import org.springframework.context.annotation.Import;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import com.example.checkApp.dto.response.CheckResultResponse;
 import com.example.checkApp.dto.response.CheckStatsResponse;
 import com.example.checkApp.dto.response.PageResponse;
 import com.example.checkApp.entity.Check;
 import com.example.checkApp.entity.CheckResult;
+import com.example.checkApp.entity.User;
 import com.example.checkApp.exception.NotFoundException;
 import com.example.checkApp.model.CheckStatus;
 import com.example.checkApp.repository.CheckRepository;
 import com.example.checkApp.repository.CheckResultRepository;
+import com.example.checkApp.repository.UserRepository;
 
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
@@ -37,13 +41,28 @@ class CheckHistoryServiceTest {
     @Autowired
     private CheckResultRepository checkResultRepository;
 
+    @Autowired
+    private UserRepository userRepository;
+
+    @MockitoBean
+    private CurrentUserService currentUserService;
+
     private Check check;
+    private User alice;
 
     @BeforeEach
     void setUp() {
+        alice = new User();
+        alice.setUsername("alice");
+        alice.setPassword("encoded");
+        alice = userRepository.saveAndFlush(alice);
+
+        when(currentUserService.getUser()).thenReturn(alice);
+
         check = new Check();
         check.setName("google");
         check.setUrl("https://google.com");
+        check.setUser(alice);
         check = checkRepository.saveAndFlush(check);
     }
 
@@ -87,6 +106,23 @@ class CheckHistoryServiceTest {
     @Test
     void statsThrows404ForMissingCheck() {
         assertThatThrownBy(() -> checkHistoryService.getStats(404L, 24))
+                .isInstanceOf(NotFoundException.class);
+    }
+
+    @Test
+    void statsThrows404ForForeignCheck() {
+        User bob = new User();
+        bob.setUsername("bob");
+        bob.setPassword("encoded");
+        Long bobId = userRepository.saveAndFlush(bob).getId();
+
+        Check foreign = new Check();
+        foreign.setName("other");
+        foreign.setUrl("https://other.com");
+        foreign.setUser(userRepository.findById(bobId).orElseThrow());
+        Long foreignId = checkRepository.saveAndFlush(foreign).getId();
+
+        assertThatThrownBy(() -> checkHistoryService.getStats(foreignId, 24))
                 .isInstanceOf(NotFoundException.class);
     }
 
