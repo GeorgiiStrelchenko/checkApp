@@ -19,6 +19,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
+import com.example.checkApp.PostgresTestSupport;
 import com.example.checkApp.entity.User;
 import com.example.checkApp.repository.CheckRepository;
 import com.example.checkApp.repository.CheckResultRepository;
@@ -28,7 +29,7 @@ import tools.jackson.databind.ObjectMapper;
 
 @SpringBootTest
 @AutoConfigureMockMvc
-class AuthIntegrationTest {
+class AuthIntegrationTest extends PostgresTestSupport {
 
     @Autowired
     private MockMvc mockMvc;

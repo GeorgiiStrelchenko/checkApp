@@ -18,6 +18,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.example.checkApp.PostgresTestSupport;
 import com.example.checkApp.repository.CheckRepository;
 import com.example.checkApp.repository.CheckResultRepository;
 import com.example.checkApp.repository.UserRepository;
@@ -25,7 +26,7 @@ import com.example.checkApp.repository.UserRepository;
 @SpringBootTest
 @AutoConfigureMockMvc
 @Transactional
-class UiFlowIntegrationTest {
+class UiFlowIntegrationTest extends PostgresTestSupport {
 
     @Autowired
     private MockMvc mockMvc;

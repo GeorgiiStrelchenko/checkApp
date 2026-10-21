@@ -15,6 +15,7 @@ import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabas
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
+import com.example.checkApp.PostgresTestSupport;
 import com.example.checkApp.dto.response.CheckResultResponse;
 import com.example.checkApp.dto.response.CheckStatsResponse;
 import com.example.checkApp.dto.response.PageResponse;
@@ -30,7 +31,7 @@ import com.example.checkApp.repository.UserRepository;
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @Import(CheckHistoryService.class)
-class CheckHistoryServiceTest {
+class CheckHistoryServiceTest extends PostgresTestSupport {
 
     @Autowired
     private CheckHistoryService checkHistoryService;

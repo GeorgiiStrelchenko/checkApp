@@ -13,6 +13,7 @@ import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabas
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
+import com.example.checkApp.PostgresTestSupport;
 import com.example.checkApp.dto.response.PingResponse;
 import com.example.checkApp.entity.Check;
 import com.example.checkApp.entity.CheckResult;
@@ -23,7 +24,7 @@ import com.example.checkApp.repository.CheckResultRepository;
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @Import(CheckRunService.class)
-class CheckRunServiceTest {
+class CheckRunServiceTest extends PostgresTestSupport {
 
     @Autowired
     private CheckRunService checkRunService;

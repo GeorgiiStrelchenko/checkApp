@@ -10,12 +10,13 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.test.web.servlet.MockMvc;
 
+import com.example.checkApp.PostgresTestSupport;
 import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.ObjectMapper;
 
 @SpringBootTest
 @AutoConfigureMockMvc
-class OpenApiIntegrationTest {
+class OpenApiIntegrationTest extends PostgresTestSupport {
 
     @Autowired
     private MockMvc mockMvc;

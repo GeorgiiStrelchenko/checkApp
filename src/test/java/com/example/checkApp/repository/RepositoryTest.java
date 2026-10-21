@@ -12,13 +12,14 @@ import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
 import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
 
+import com.example.checkApp.PostgresTestSupport;
 import com.example.checkApp.entity.Check;
 import com.example.checkApp.entity.CheckResult;
 import com.example.checkApp.model.CheckStatus;
 
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-class RepositoryTest {
+class RepositoryTest extends PostgresTestSupport {
 
     @Autowired
     private TestEntityManager entityManager;
