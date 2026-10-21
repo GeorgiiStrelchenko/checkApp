@@ -1,0 +1,13 @@
+spring:
+  application:
+    name: checkApp
+  datasource:
+    url: jdbc:postgresql://localhost:5433/checkapp
+    username: checkapp
+    password: checkapp
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+  flyway:
+    enabled: true
