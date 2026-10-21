@@ -12,3 +12,6 @@ spring:
 app:
   scheduler:
     enabled: false
+  telegram:
+    bot-token: ""
+    chat-id: ""

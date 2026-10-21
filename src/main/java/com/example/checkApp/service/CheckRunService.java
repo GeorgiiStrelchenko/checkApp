@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.example.checkApp.dto.response.PingResponse;
 import com.example.checkApp.entity.Check;
 import com.example.checkApp.entity.CheckResult;
+import com.example.checkApp.model.CheckStatus;
 import com.example.checkApp.repository.CheckRepository;
 import com.example.checkApp.repository.CheckResultRepository;
 
@@ -23,9 +24,12 @@ public class CheckRunService {
 
     private final CheckResultRepository checkResultRepository;
     private final CheckRepository checkRepository;
+    private final AlertNotifier alertNotifier;
 
     @Transactional
     public CheckResult recordResult(Check check, PingResponse ping) {
+        CheckStatus previousStatus = check.getLastStatus();
+
         CheckResult result = new CheckResult();
         result.setCheck(check);
         result.setStatus(ping.status());
@@ -40,7 +44,18 @@ public class CheckRunService {
 
         log.info("Check '{}' ({}) -> {} ({} ms, code {})",
                 check.getName(), check.getUrl(), ping.status(), ping.responseTimeMs(), ping.httpCode());
+
+        if (isStatusChange(previousStatus, ping.status())) {
+            alertNotifier.notifyStatusChange(check, previousStatus, ping.status());
+        }
         return result;
+    }
+
+    private static boolean isStatusChange(CheckStatus previousStatus, CheckStatus currentStatus) {
+        if (previousStatus == null) {
+            return currentStatus == CheckStatus.DOWN;
+        }
+        return previousStatus != currentStatus;
     }
 
     private static String truncate(String value) {

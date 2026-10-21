@@ -15,14 +15,18 @@ public class RestClientConfig {
     public static final Duration READ_TIMEOUT = Duration.ofSeconds(10);
 
     @Bean
-    RestClient restClient() {
+    RestClient.Builder restClientBuilder() {
         HttpClient jdkClient = HttpClient.newBuilder()
                 .connectTimeout(CONNECT_TIMEOUT)
                 .build();
         JdkClientHttpRequestFactory requestFactory = new JdkClientHttpRequestFactory(jdkClient);
         requestFactory.setReadTimeout(READ_TIMEOUT);
         return RestClient.builder()
-                .requestFactory(requestFactory)
-                .build();
+                .requestFactory(requestFactory);
+    }
+
+    @Bean
+    RestClient restClient(RestClient.Builder builder) {
+        return builder.build();
     }
 }
