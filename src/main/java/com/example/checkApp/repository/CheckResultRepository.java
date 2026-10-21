@@ -1,5 +1,6 @@
 package com.example.checkApp.repository;
 
+import java.time.Instant;
 import java.util.List;
 
 import org.springframework.data.domain.Page;
@@ -13,4 +14,6 @@ public interface CheckResultRepository extends JpaRepository<CheckResult, Long> 
     List<CheckResult> findTop20ByCheckIdOrderByCheckedAtDesc(Long checkId);
 
     Page<CheckResult> findByCheckId(Long checkId, Pageable pageable);
+
+    List<CheckResult> findByCheckIdAndCheckedAtGreaterThanEqualOrderByCheckedAtAsc(Long checkId, Instant from);
 }

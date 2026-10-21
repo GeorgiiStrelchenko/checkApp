@@ -25,8 +25,12 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import com.example.checkApp.dto.request.CheckRequest;
 import com.example.checkApp.dto.response.CheckResponse;
+import com.example.checkApp.dto.response.CheckResultResponse;
+import com.example.checkApp.dto.response.CheckStatsResponse;
+import com.example.checkApp.dto.response.PageResponse;
 import com.example.checkApp.exception.NotFoundException;
 import com.example.checkApp.model.CheckStatus;
+import com.example.checkApp.service.CheckHistoryService;
 import com.example.checkApp.service.CheckService;
 
 @WebMvcTest(CheckController.class)
@@ -41,6 +45,9 @@ class CheckControllerTest {
 
     @MockitoBean
     private CheckService checkService;
+
+    @MockitoBean
+    private CheckHistoryService checkHistoryService;
 
     private CheckResponse sampleResponse() {
         return new CheckResponse(1L, "google", "https://google.com", 60, true,
@@ -131,5 +138,68 @@ class CheckControllerTest {
 
         mockMvc.perform(delete("/api/checks/42"))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void resultsReturnsPage() throws Exception {
+        when(checkHistoryService.getResults(1L, 0, 20))
+                .thenReturn(new PageResponse<>(List.of(
+                        new CheckResultResponse(10L, CheckStatus.UP, 200, 42L, null,
+                                Instant.parse("2026-01-01T00:00:00Z"))),
+                        0, 20, 1, 1));
+
+        mockMvc.perform(get("/api/checks/1/results"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content[0].status").value("UP"))
+                .andExpect(jsonPath("$.content[0].httpCode").value(200))
+                .andExpect(jsonPath("$.totalElements").value(1));
+    }
+
+    @Test
+    void resultsRespectsPagingParams() throws Exception {
+        when(checkHistoryService.getResults(1L, 2, 50))
+                .thenReturn(new PageResponse<>(List.of(), 2, 50, 0, 0));
+
+        mockMvc.perform(get("/api/checks/1/results?page=2&size=50"))
+                .andExpect(status().isOk());
+
+        verify(checkHistoryService).getResults(1L, 2, 50);
+    }
+
+    @Test
+    void resultsReturns404WhenCheckMissing() throws Exception {
+        when(checkHistoryService.getResults(404L, 0, 20)).thenThrow(new NotFoundException("Check", 404L));
+
+        mockMvc.perform(get("/api/checks/404/results"))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void resultsRejectsTooLargeSize() throws Exception {
+        mockMvc.perform(get("/api/checks/1/results?size=500"))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void statsReturnsUptime() throws Exception {
+        when(checkHistoryService.getStats(1L, 24))
+                .thenReturn(new CheckStatsResponse(1L, 24, 100, 95, 5, 95.0, 120L, 5000L));
+
+        mockMvc.perform(get("/api/checks/1/stats"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.uptimePercent").value(95.0))
+                .andExpect(jsonPath("$.upCount").value(95))
+                .andExpect(jsonPath("$.downCount").value(5))
+                .andExpect(jsonPath("$.avgResponseTimeMs").value(120));
+    }
+
+    @Test
+    void statsAcceptsCustomPeriod() throws Exception {
+        when(checkHistoryService.getStats(1L, 168))
+                .thenReturn(new CheckStatsResponse(1L, 168, 0, 0, 0, 100.0, null, null));
+
+        mockMvc.perform(get("/api/checks/1/stats?hours=168"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.periodHours").value(168));
     }
 }
