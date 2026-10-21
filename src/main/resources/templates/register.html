@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head('Register')}"></head>
+<body>
+<div class="container" style="max-width:420px; margin-top:80px">
+    <div class="card">
+        <h1>Create an account</h1>
+
+        <div class="flash error" th:if="${error}" th:text="${error}">conflict</div>
+
+        <form th:action="@{/register}" th:object="${registerRequest}" method="post">
+            <label for="username">Username</label>
+            <input id="username" type="text" th:field="*{username}" autocomplete="username" required autofocus>
+            <div class="error" th:if="${#fields.hasErrors('username')}" th:errors="*{username}">username error</div>
+
+            <label for="password">Password (min 8 characters)</label>
+            <input id="password" type="password" th:field="*{password}" autocomplete="new-password" required>
+            <div class="error" th:if="${#fields.hasErrors('password')}" th:errors="*{password}">password error</div>
+
+            <button type="submit" style="width:100%">Register</button>
+        </form>
+
+        <p class="muted" style="margin-top:16px">
+            Already registered? <a th:href="@{/login}">Login</a>
+        </p>
+    </div>
+</div>
+</body>
+</html>
