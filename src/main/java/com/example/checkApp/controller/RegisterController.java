@@ -1,5 +1,6 @@
 package com.example.checkApp.controller;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -13,6 +14,7 @@ import com.example.checkApp.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
+@Tag(name = "Auth", description = "User registration for API access")
 @RestController
 @RequestMapping("/api")
 @RequiredArgsConstructor

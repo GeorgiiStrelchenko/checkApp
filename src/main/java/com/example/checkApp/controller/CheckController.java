@@ -1,5 +1,6 @@
 package com.example.checkApp.controller;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import java.net.URI;
 import java.util.List;
 
@@ -30,6 +31,7 @@ import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 
+@Tag(name = "Checks", description = "CRUD checks, history and statistics")
 @RestController
 @RequestMapping("/api/checks")
 @RequiredArgsConstructor

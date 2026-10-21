@@ -24,9 +24,11 @@ import com.example.checkApp.service.CheckHistoryService;
 import com.example.checkApp.service.CheckService;
 import com.example.checkApp.service.UserService;
 
+import io.swagger.v3.oas.annotations.Hidden;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
+@Hidden
 @Controller
 @RequiredArgsConstructor
 public class UiController {
