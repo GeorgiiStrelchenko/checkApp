@@ -31,6 +31,11 @@ public class GlobalExceptionHandler {
         return build(HttpStatus.BAD_REQUEST, "Malformed request body", request, Map.of());
     }
 
+    @ExceptionHandler(NotFoundException.class)
+    public ResponseEntity<ApiError> handleNotFound(NotFoundException ex, WebRequest request) {
+        return build(HttpStatus.NOT_FOUND, ex.getMessage(), request, Map.of());
+    }
+
     private ResponseEntity<ApiError> build(HttpStatus status, String message, WebRequest request,
             Map<String, String> fieldErrors) {
         String path = request instanceof ServletWebRequest sw
