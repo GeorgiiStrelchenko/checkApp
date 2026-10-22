@@ -14,6 +14,22 @@ import org.springframework.web.client.RestClient;
 import com.example.checkApp.entity.Check;
 import com.example.checkApp.model.CheckStatus;
 
+/**
+ * Тесты Telegram-алертов без настоящего Telegram.
+ *
+ * <p>Три сценария:</p>
+ * <ol>
+ *   <li>токен/чат не настроены → режим заглушки, ничего не уходит наружу
+ *       (тест просто выполняет оба варианта сообщения — падения нет = «успех»);</li>
+ *   <li>всё настроено → MockRestServiceServer ловит POST на
+ *       {@code https://api.telegram.org/bottok123/sendMessage} и проверяет метод;</li>
+ *   <li>Telegram вернул 500 → исключение поглощается, тест не падает
+ *       (мониторинг обязан переживать недоступность телеграма).</li>
+ * </ol>
+ *
+ * <p>Здесь тот же {@link org.springframework.test.web.client.MockRestServiceServer},
+ * что и в HttpClientServiceTest — мок вместо сети.</p>
+ */
 class TelegramAlertServiceTest {
 
     private static final String SEND_MESSAGE_URL = "https://api.telegram.org/bottok123/sendMessage";

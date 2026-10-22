@@ -1,3 +1,16 @@
+<!--
+  login.html — страница входа.
+
+  Строки внизу с th:if="${param.xxx}" — сообщения из query-параметров редиректа:
+    /login?error      — не подошёл логин/пароль (сюда ведёт Spring Security)
+    /login?logout     — пользователь нажал Logout (logoutSuccessUrl из SecurityConfig)
+    /login?registered — только что зарегистрировались (редирект из UiController)
+  ${param.xxx} — способ Thymeleaf прочитать query-параметры URL.
+
+  Форма отправляет POST на /login — обрабатывает Spring Security, не наш контроллер.
+  Имена полей (username/password) — дефолтные у form login'а Security.
+  CSRF-токен Thymeleaf добавляет сам через th:action.
+-->
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head th:replace="~{layout :: head('Login')}"></head>

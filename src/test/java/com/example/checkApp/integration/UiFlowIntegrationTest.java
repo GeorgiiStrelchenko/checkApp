@@ -23,6 +23,20 @@ import com.example.checkApp.repository.CheckRepository;
 import com.example.checkApp.repository.CheckResultRepository;
 import com.example.checkApp.repository.UserRepository;
 
+/**
+ * Интеграционный сценарий «пользователь через браузер»: регистрация формой →
+ * логин → управление чеками на дашборде. Всё приложение + реальная БД (Testcontainers).
+ *
+ * <p>Особенности:</p>
+ * <ul>
+ *   <li>{@code @Transactional} на уровне класса: каждый тест выполняется в транзакции
+ *       и откатывается — данные одного теста не видят соседи; это же позволяет читать
+ *       сущности ({@code check.getUser().getUsername()}) без LazyInitializationException,
+ *       пока транзакция открыта;</li>
+ *   <li>POST-формы с {@code csrf()}: без CSRF-токена Security отдаст 403;</li>
+ *   <li>чужой доступ: «other» регистрируется, но видит редирект на / вместо чужого чека.</li>
+ * </ul>
+ */
 @SpringBootTest
 @AutoConfigureMockMvc
 @Transactional

@@ -27,6 +27,26 @@ import com.example.checkApp.repository.UserRepository;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
+/**
+ * Интеграционный тест аутентификации и прав доступа: поднимается ВСЁ приложение
+ * ({@code @SpringBootTest}), MockMvc ходит по реальным контроллерам, сервисам и БД
+ * (настоящий PostgreSQL из Testcontainers — см. PostgresTestSupport).
+ *
+ * <p>Что проверяем сквозным порядком:</p>
+ * <ol>
+ *   <li>регистрация через {@code /api/register} → 201;</li>
+ *   <li>форма логина {@code formLogin()} → 302 (сессия открыта);</li>
+ *   <li>создание чека под своим именем → 201; список — только свои;</li>
+ *   <li>без логина API → 401;</li>
+ *   <li>дубль регистрации → 409;</li>
+ *   <li>чужой чек → 404, а не 403 (не раскрываем существование);</li>
+ *   <li>пароль в БД — BCrypt-хэш (не открытым текстом).</li>
+ * </ol>
+ *
+ * <p>Гигиена данных: тесты пишут в общую БД, поэтому чистят таблицы
+ * и до ({@code @BeforeEach}), и после ({@code @AfterEach}) — порядок важен,
+ * иначе «мусор» протёк бы в соседний тест-класс.</p>
+ */
 @SpringBootTest
 @AutoConfigureMockMvc
 class AuthIntegrationTest extends PostgresTestSupport {

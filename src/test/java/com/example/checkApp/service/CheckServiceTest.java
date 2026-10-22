@@ -25,6 +25,21 @@ import com.example.checkApp.entity.User;
 import com.example.checkApp.exception.NotFoundException;
 import com.example.checkApp.repository.CheckRepository;
 
+/**
+ * Unit-тесты CheckService на Mockito: репозиторий и «текущий пользователь» замоканы,
+ * Spring-контекст и БД не нужны — тестируется только бизнес-логика сервиса.
+ *
+ * <p>Главная тема тестов — <b>изоляция пользователей</b>:</p>
+ * <ul>
+ *   <li>создание привязывает чек к тому, кто залогинен ({@code createAssignsCurrentUserAsOwner});</li>
+ *   <li>список запрашивается по id владельца;</li>
+ *   <li>чужой чек → 404, как и несуществующий ({@code findByIdThrows404WhenOwnedByAnotherUser}) —
+ *       защита от IDOR, ответы неотличимы.</li>
+ * </ul>
+ *
+ * <p>{@code lenient()...} в setUp: заглушка getUser() нужна не всем тестам,
+ * а Mockito по умолчанию ругается на неиспользованные моки (strict stubs).</p>
+ */
 @ExtendWith(MockitoExtension.class)
 class CheckServiceTest {
 
@@ -62,6 +77,11 @@ class CheckServiceTest {
         return check;
     }
 
+    /**
+     * Симуляция save(): Mockito сам id не проставляет (это делает БД),
+     * поэтому через thenAnswer «подкладываем» сохранённой сущности id —
+     * иначе в ответе был бы null и тесты ниже не прошли.
+     */
     @Test
     void createSavesAndMaps() {
         when(checkRepository.save(any(Check.class))).thenAnswer(inv -> {

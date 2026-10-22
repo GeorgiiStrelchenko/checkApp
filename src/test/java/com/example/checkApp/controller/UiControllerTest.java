@@ -40,6 +40,21 @@ import com.example.checkApp.service.CheckHistoryService;
 import com.example.checkApp.service.CheckService;
 import com.example.checkApp.service.UserService;
 
+/**
+ * Срез-тесты Thymeleaf-контроллера: проверяем страницы, редиректы и flash-сообщения,
+ * а не JSON. Сервисы замоканы ({@code @MockitoBean}), Security импортирован явно.
+ *
+ * <p>Пара тонкостей, которые здесь тестятся:</p>
+ * <ul>
+ *   <li>анонимный GET / → 302 на /login (запрос с {@code Accept: text/html},
+ *       иначе Security вернул бы 401 для API);</li>
+ *   <li>POST-формы требуют CSRF ({@code .with(csrf())}) и пользователя ({@code .with(user("alice"))}) —
+ *       иначе 403;</li>
+ *   <li>ошибки валидации формы → рендеринг той же страницы с ошибками
+ *       ({@code model().attributeHasFieldErrors(...)}) без вызова сервиса;</li>
+ *   <li>чужой/потерянный чек в UI → редирект на /, а не 404 (см. UiController#detail).</li>
+ * </ul>
+ */
 @WebMvcTest(UiController.class)
 @Import({SecurityConfig.class, GlobalModelAdvice.class})
 class UiControllerTest {

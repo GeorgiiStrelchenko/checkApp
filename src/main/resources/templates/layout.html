@@ -1,5 +1,16 @@
+<!--
+  layout.html — общий «каркас» для всех страниц: подключаемые фрагменты
+  и все стили проекта (без внешних CSS/JS — интерфейс самодостаточен).
+
+  Thymeleaf-фрагменты объявляются через th:fragment, а подключаются на другой
+  странице через th:replace / th:include:
+      <head th:replace="~{layout :: head('Login')}">  — подставить <head> из layout с параметром title
+      <div th:replace="~{layout :: nav}">             — подставить навбар
+  Синтаксис ~{имя :: фрагмент} — «импорт» из другого шаблона.
+-->
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
+<!-- Фрагмент <head>: title подставляется параметром (th:text="${title} + ' · checkApp'") -->
 <head th:fragment="head(title)">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -47,6 +58,11 @@
     </style>
 </head>
 <body>
+<!-- Фрагмент навбара: лого, имя текущего юзера (${username} кладёт GlobalModelAdvice)
+     и форма выхода. Кнопка — обычная POST-форма на /logout: Spring Security
+     требует POST + CSRF-токен; th:action автоматически добавляет _csrf в скрытое поле.
+     Подключается он только на авторизованных страницах (дашборд, страница чека) —
+     страницы логина/регистрации используют лишь фрагмент head. -->
 <div th:fragment="nav">
     <nav class="navbar">
         <a class="brand" th:href="@{/}">checkApp</a>

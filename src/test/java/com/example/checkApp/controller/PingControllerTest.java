@@ -19,6 +19,14 @@ import com.example.checkApp.dto.response.PingResponse;
 import com.example.checkApp.model.CheckStatus;
 import com.example.checkApp.service.PingService;
 
+/**
+ * Срез-тесты {@code POST /api/ping}: сервис замокан, проверяется HTTP-контракт.
+ *
+ * <p>Обратите внимание: аннотации {@code @WithMockUser} здесь <b>нет</b> —
+ * эндпоинт /api/ping публичный (permitAll в SecurityConfig), поэтому запрос
+ * должен работать и без аутентификации. Попутно тестируем, что ошибки валидации
+ * и «сломанный JSON» преврашаются в 400 с нашим ApiError-форматом.</p>
+ */
 @WebMvcTest(PingController.class)
 @Import(SecurityConfig.class)
 class PingControllerTest {

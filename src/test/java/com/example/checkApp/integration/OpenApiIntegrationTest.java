@@ -14,6 +14,13 @@ import com.example.checkApp.PostgresTestSupport;
 import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.ObjectMapper;
 
+/**
+ * Интеграционные тесты документации: springdoc отдаёт спецификацию, Swagger UI открыт
+ * без аутентификации, UI-маршруты в API-документацию не попадают.
+ *
+ * <p>{@code @SpringBootTest} + MockMvc + реальная БД (Testcontainers) — потому что
+ * генерация OpenAPI в springdoc частично опирается на реально поднятые бины/контроллеры.</p>
+ */
 @SpringBootTest
 @AutoConfigureMockMvc
 class OpenApiIntegrationTest extends PostgresTestSupport {

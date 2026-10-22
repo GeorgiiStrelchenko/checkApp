@@ -1,3 +1,13 @@
+<!--
+  register.html — форма регистрации.
+
+  th:object="${registerRequest}" — привязка к объекту из модели (кладёт UiController),
+  th:field="*{username}" — значение поля + name= для отправки формы «в одну строку».
+  #fields.hasErrors('username') — есть ли ошибки валидации по полю (BindingResult
+  в контроллере): если да — выводим текст ошибки под полем.
+  ${error} — сообщение об ином конфликте (логин занят), кладёт UiController при ConflictException.
+  После успеха контроллер делает redirect:/login?registered → страница логина покажет «Регистрация прошла».
+-->
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head th:replace="~{layout :: head('Register')}"></head>

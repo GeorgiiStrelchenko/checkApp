@@ -1,3 +1,21 @@
+<!--
+  dashboard.html — главная страница после входа: список чеков + форма создания.
+
+  Модель, которую готовит UiController:
+    checks       — List<CheckResponse>  чеки текущего пользователя
+    stats        — Map<Long, CheckStatsResponse>  uptime-статистика каждого чека за 24ч (ключ — id)
+    checkRequest — объект формы (пустой, для th:object)
+    message/error — flash-сообщения после редиректа (создано/удалено/ошибка)
+
+  Основные конструкции Thymeleaf здесь:
+    th:each="check : ${checks}"      — цикл (как for-each)
+    th:text="${...}"                 — подставить текст (экранирует HTML)
+    th:href="@{/checks/{id}(id=...)}" — построить URL со сляпленными параметрами
+    th:action="@{/checks}"           — action формы + автоматический CSRF-токен
+    th:object / th:field="*{...}"    — привязка к DTO формы
+    #fields.hasErrors / th:errors    — ошибки валидации под полями
+    th:classappend                   — доклеить CSS-класс (badge UP/DOWN/UNKNOWN)
+-->
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head th:replace="~{layout :: head('Dashboard')}"></head>
@@ -5,6 +23,7 @@
 <div th:replace="~{layout :: nav}"></div>
 <div class="container">
 
+    <!-- Flash-сообщения после POST → redirect (живут ровно один переход) -->
     <div class="flash" th:if="${message}" th:text="${message}">saved</div>
     <div class="flash error" th:if="${error}" th:text="${error}">error</div>
 
@@ -27,6 +46,8 @@
             </tr>
             </thead>
             <tbody>
+            <!-- Цикл по чекам; методы record вызываются как чеко-без скобок в Java,
+                 но в выражениях Thymeleaf допустимы оба варианта: check.id() / check.id -->
             <tr th:each="check : ${checks}">
                 <td>
                     <a th:href="@{/checks/{id}(id=${check.id()})}" th:text="${check.name()}">google</a>
@@ -61,6 +82,8 @@
 
     <div class="card">
         <h2>Add check</h2>
+        <!-- Форма создания: th:object = CheckRequest из модели, отправка POST /checks
+             (обрабатывает UiController#createCheck) -->
         <form th:action="@{/checks}" th:object="${checkRequest}" method="post">
             <div class="form-row">
                 <div>

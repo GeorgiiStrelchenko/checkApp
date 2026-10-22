@@ -20,6 +20,16 @@ import com.example.checkApp.dto.request.RegisterRequest;
 import com.example.checkApp.exception.ConflictException;
 import com.example.checkApp.service.UserService;
 
+/**
+ * Срез-тесты REST-регистрации ({@code POST /api/register}): сервис замокан,
+ * проверяется HTTP-контракт.
+ *
+ * <p>Ключевые кейсы: 201 при успехе, 409 при занятом логине (ConflictException
+ * → GlobalExceptionHandler), 400 на ошибках валидации (короткий пароль,
+ * пустой логин, сломанный JSON) — все в едином формате ApiError с fieldErrors.</p>
+ *
+ * <p>{@code @WithMockUser} не нужен: эндпоинт публичный.</p>
+ */
 @WebMvcTest(RegisterController.class)
 @Import(SecurityConfig.class)
 class RegisterControllerTest {

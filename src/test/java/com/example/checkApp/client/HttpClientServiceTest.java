@@ -15,6 +15,22 @@ import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.ResourceAccessException;
 
+/**
+ * Unit-тесты HTTP-клиента мониторинга — <b>без реальной сети</b>.
+ *
+ * <p>Вместо настоящего сервера используется {@link MockRestServiceServer} —
+ * встроенный мок для RestClient: тест заранее описывает «ожидания»
+ * ({@code server.expect(requestTo(...)).andRespond(...)}), а после выполнения
+ * {@code server.verify()} сверяет, что всё прошло как задумано.</p>
+ *
+ * <p>Проверяем три сценария, критичных для мониторинга:</p>
+ * <ol>
+ *   <li>200 OK → reachable, код 200, ошибки нет;</li>
+ *   <li>500 Server Error → reachable всё равно true (сайт ответил!),
+ *       исключение НЕ бросается — это принципиальное поведение;</li>
+ *   <li>сеть недоступна (IOException) → reachable false, текст ошибки сохранён.</li>
+ * </ol>
+ */
 class HttpClientServiceTest {
 
     private MockRestServiceServer server;

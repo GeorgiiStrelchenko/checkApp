@@ -17,6 +17,21 @@ import com.example.checkApp.entity.Check;
 import com.example.checkApp.entity.CheckResult;
 import com.example.checkApp.model.CheckStatus;
 
+/**
+ * Тесты репозиториев на {@code @DataJpaTest}: только JPA-слой, схему создаёт Flyway,
+ * базу поднимает Testcontainers (PostgresTestSupport).
+ *
+ * <p>{@code @AutoConfigureTestDatabase(replace = NONE)} дополнительно подтверждает:
+ * Spring НЕ подменяет наш PostgreSQL на встроенную БД (то же самое задано глобально
+ * в тестовом application.yml).</p>
+ *
+ * <p>{@code TestEntityManager} — тестовый помощник Hibernate: flush() принудительно
+ * «проталкивает» изменения в SQL (проверить, что save реально сохранил),
+ * clear() вычищает кэш первого уровня (проверить, что чтение идёт из БД).</p>
+ *
+ * <p>Покрываем: сохранение/чтение чека, фильтр findByEnabledTrue, связь
+ * результат↔чек, DOWN-запись без httpCode, каскадное удаление истории.</p>
+ */
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 class RepositoryTest extends PostgresTestSupport {

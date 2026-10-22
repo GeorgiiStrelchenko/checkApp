@@ -1,3 +1,15 @@
+<!--
+  check-detail.html — страница одного чека: статус, uptime-статистика, история.
+
+  Модель из UiController#detail:
+    check   — CheckResponse        данные чека
+    stats   — CheckStatsResponse   агрегаты за выбранное окно (hours)
+    results — PageResponse<CheckResultResponse>  последние 20 результатов
+    hours   — применённое окно в часах (1..720, параметр ?hours=...)
+
+  Переключатель окна (24h / 7d / 30d) — обычные ссылки с тем же id,
+  но разным query-параметром hours: @{/checks/{id}(id=..., hours=168)}.
+-->
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head th:replace="~{layout :: head('Check details')}"></head>
@@ -29,6 +41,8 @@
                 <a th:href="@{/checks/{id}(id=${check.id()}, hours=720)}">30d</a>
             </span>
         </h2>
+        <!-- Сетка карточек статистики. Пустые значения (null = «нет данных»)
+             показываем прочерком, а не нулём -->
         <div class="stats-grid">
             <div class="stat">
                 <div class="value"
@@ -62,6 +76,8 @@
 
     <div class="card">
         <h2>Recent checks</h2>
+        <!-- История результатов: results — PageResponse, поэтому элементы в content(),
+             а счётчик страниц — totalPages()/page() -->
         <div th:if="${#lists.isEmpty(results.content())}" class="muted">No results yet.</div>
         <table th:unless="${#lists.isEmpty(results.content())}">
             <thead>

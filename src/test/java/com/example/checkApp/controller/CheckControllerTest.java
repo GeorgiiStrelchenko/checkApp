@@ -36,6 +36,25 @@ import com.example.checkApp.model.CheckStatus;
 import com.example.checkApp.service.CheckHistoryService;
 import com.example.checkApp.service.CheckService;
 
+/**
+ * Срез-тесты REST-контроллера чеков: {@code @WebMvcTest} поднимает только слой
+ * web (контроллер + Security + Jackson), сервисы заменяются на Mockito-заглушки
+ * ({@code @MockitoBean}) — БД и Spring-контекст целиком не нужны.
+ *
+ * <p>Разбор по аннотациям:</p>
+ * <ul>
+ *   <li>{@code @WebMvcTest(CheckController.class)} — поднять только этот контроллер;</li>
+ *   <li>{@code @Import(SecurityConfig.class)} — в срезе нет авто-конфигурации Security,
+ *       импортируем её руками, иначе /api/** был бы открыт всем;</li>
+ *   <li>{@code @WithMockUser(username = "alice")} — «зашли под alice»: тесты проходят
+ *       авторизацию, не дёргая логин;</li>
+ *   <li>{@code MockMvc} — «виртуальный Tomcat»: perform(post(...)) → проверяем статусы,
+ *       заголовки и JSON-пути ({@code jsonPath}).</li>
+ * </ul>
+ *
+ * <p>Что проверяем: контракт API (201+Location, 200, 204, 400, 404), валидацию полей,
+ * передачу query-параметров пагинации в сервис и формат JSON-ошибок.</p>
+ */
 @WebMvcTest(CheckController.class)
 @Import(SecurityConfig.class)
 @WithMockUser(username = "alice")
@@ -73,6 +92,10 @@ class CheckControllerTest {
                 .andExpect(jsonPath("$.status").doesNotExist());
     }
 
+    /**
+     * Кривой URL (не проходит @URL) → 400 и ошибка по полю в {@code fieldErrors} —
+     * проверяем, что GlobalExceptionHandler отдаёт наш формат ApiError, а не HTML.
+     */
     @Test
     void createReturns400ForInvalidUrl() throws Exception {
         mockMvc.perform(post("/api/checks")

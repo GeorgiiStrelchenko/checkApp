@@ -14,6 +14,18 @@ import com.example.checkApp.client.PingOutcome;
 import com.example.checkApp.dto.response.PingResponse;
 import com.example.checkApp.model.CheckStatus;
 
+/**
+ * Unit-тесты PingService: проверяем «перевод» результата HTTP-клиента в ответ API.
+ *
+ * <p>Ключевые сценарии (HTTP-клиент замокан, реальной сети нет):</p>
+ * <ul>
+ *   <li>сервер ответил → статус UP;</li>
+ *   <li>соединение не удалось → статус DOWN, текст ошибки доходит до ответа.</li>
+ * </ul>
+ *
+ * <p>Паттерн: {@code @Mock} — зависимость-заглушка, {@code @InjectMocks} —
+ * сервис, в который заглушка внедряется Mockito автоматически.</p>
+ */
 @ExtendWith(MockitoExtension.class)
 class PingServiceTest {
 

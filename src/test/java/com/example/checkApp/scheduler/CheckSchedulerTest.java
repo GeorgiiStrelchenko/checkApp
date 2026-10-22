@@ -24,6 +24,22 @@ import com.example.checkApp.repository.CheckRepository;
 import com.example.checkApp.service.CheckRunService;
 import com.example.checkApp.service.PingService;
 
+/**
+ * Unit-тесты планировщика: чистый Mockito, ни БД, ни Spring-контекста.
+ *
+ * <p>{@code @ExtendWith(MockitoExtension.class)} + {@code @Mock} + {@code @InjectMocks}:
+ * Mockito создаёт заглушки для зависимостей и внедряет их в {@code CheckScheduler}
+ * конструктором — тестируем логику изоляции.</p>
+ *
+ * <p>Что проверяем:</p>
+ * <ul>
+ *   <li>{@link CheckScheduler#isDue} — «пора ли пинговать» (не проверялся / интервал прошёл / ещё рано);</li>
+ *   <li>{@code tick} — пингуются только «своевременные» чеки, выключенный планировщик
+ *       вообще ничего не делает (flag подставляется через ReflectionTestUtils —
+ *       поле приватное и заполняется @Value только в Spring);</li>
+ *   <li>{@code runSingle} — падение одного пинга не роняет тик (исключение глотается).</li>
+ * </ul>
+ */
 @ExtendWith(MockitoExtension.class)
 class CheckSchedulerTest {
 

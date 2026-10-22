@@ -28,6 +28,22 @@ import com.example.checkApp.repository.CheckRepository;
 import com.example.checkApp.repository.CheckResultRepository;
 import com.example.checkApp.repository.UserRepository;
 
+/**
+ * Тесты истории и статистики на срезе {@code @DataJpaTest}: настоящие репозитории
+ * и настоящий PostgreSQL (Testcontainers), но без веб-слоя и планировщика.
+ *
+ * <p>{@code @DataJpaTest} обычно оборачивает каждый тест в транзакцию и откатывает —
+ * данные из одного теста не «протекают» в другой, при этом {@code @BeforeEach}
+ * всё равно явно создаёт «свою» сущность (alice + чек), чтобы тесты были независимы
+ * и читаемы.</p>
+ *
+ * <p>{@code @MockitoBean CurrentUserService} — подменяем «кто залогинен»:
+ * тесты про права доступа проверяют логику 404 для чужих чеков, не заводя второго
+ * настоящего пользователя через Security.</p>
+ *
+ * <p>{@code @Import(CheckHistoryService.class)} — в срезе нет @Service-бинов,
+ * импортируем тестируемый сервис вручную.</p>
+ */
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @Import(CheckHistoryService.class)

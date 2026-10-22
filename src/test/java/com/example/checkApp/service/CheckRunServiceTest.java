@@ -21,6 +21,21 @@ import com.example.checkApp.model.CheckStatus;
 import com.example.checkApp.repository.CheckRepository;
 import com.example.checkApp.repository.CheckResultRepository;
 
+/**
+ * Тесты «ядра» мониторинга: запись результата пинга в БД + решение об алерте.
+ *
+ * <p>Срез {@code @DataJpaTest} + реальный PostgreSQL (Testcontainers): проверяем,
+ * что история действительно сохраняется, поля чека обновляются и текст ошибки
+ * обрезается ровно до 2048 символов (констрейнт колонки).</p>
+ *
+ * <p>{@code @MockitoBean AlertNotifier} — телеграм в тестах НЕ шлём: вместо него
+ * заглушка, и verify(...) проверяет, был ли вызов оповещения. Ключевые сценарии:</p>
+ * <ul>
+ *   <li>первая проверка сразу DOWN → алерт есть (previousStatus == null);</li>
+ *   <li>первая проверка UP → алерта нет;</li>
+ *   <li>UP→DOWN и DOWN→UP → алерт; статус не изменился → тишина.</li>
+ * </ul>
+ */
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @Import(CheckRunService.class)
