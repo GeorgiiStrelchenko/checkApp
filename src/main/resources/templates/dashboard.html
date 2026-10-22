@@ -1,0 +1,118 @@
+<!--
+  dashboard.html — главная страница после входа: список чеков + форма создания.
+
+  Модель, которую готовит UiController:
+    checks       — List<CheckResponse>  чеки текущего пользователя
+    stats        — Map<Long, CheckStatsResponse>  uptime-статистика каждого чека за 24ч (ключ — id)
+    checkRequest — объект формы (пустой, для th:object)
+    message/error — flash-сообщения после редиректа (создано/удалено/ошибка)
+
+  Основные конструкции Thymeleaf здесь:
+    th:each="check : ${checks}"      — цикл (как for-each)
+    th:text="${...}"                 — подставить текст (экранирует HTML)
+    th:href="@{/checks/{id}(id=...)}" — построить URL со сляпленными параметрами
+    th:action="@{/checks}"           — action формы + автоматический CSRF-токен
+    th:object / th:field="*{...}"    — привязка к DTO формы
+    #fields.hasErrors / th:errors    — ошибки валидации под полями
+    th:classappend                   — доклеить CSS-класс (badge UP/DOWN/UNKNOWN)
+-->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head('Dashboard')}"></head>
+<body>
+<div th:replace="~{layout :: nav}"></div>
+<div class="container">
+
+    <!-- Flash-сообщения после POST → redirect (живут ровно один переход) -->
+    <div class="flash" th:if="${message}" th:text="${message}">saved</div>
+    <div class="flash error" th:if="${error}" th:text="${error}">error</div>
+
+    <div class="card">
+        <h1>My checks</h1>
+
+        <div th:if="${#lists.isEmpty(checks)}" class="muted">
+            No checks yet — add your first site below.
+        </div>
+
+        <table th:unless="${#lists.isEmpty(checks)}">
+            <thead>
+            <tr>
+                <th>Name</th>
+                <th>Status</th>
+                <th>Uptime 24h</th>
+                <th>Interval</th>
+                <th>Last checked</th>
+                <th></th>
+            </tr>
+            </thead>
+            <tbody>
+            <!-- Цикл по чекам; методы record вызываются как чеко-без скобок в Java,
+                 но в выражениях Thymeleaf допустимы оба варианта: check.id() / check.id -->
+            <tr th:each="check : ${checks}">
+                <td>
+                    <a th:href="@{/checks/{id}(id=${check.id()})}" th:text="${check.name()}">google</a>
+                    <div class="muted" th:text="${check.url()}">https://google.com</div>
+                </td>
+                <td>
+                    <span class="badge"
+                          th:classappend="${check.lastStatus() == null ? 'UNKNOWN' : check.lastStatus()}"
+                          th:text="${check.lastStatus() == null ? '—' : check.lastStatus()}">UP</span>
+                    <span class="muted" th:if="${!check.enabled()}"> (disabled)</span>
+                </td>
+                <td th:text="${stats[check.id()] != null ? #numbers.formatDecimal(stats[check.id()].uptimePercent(), 1, 2) + '%' : '—'}">100%</td>
+                <td th:text="${check.checkIntervalSeconds() + ' s'}">60 s</td>
+                <td class="muted"
+                    th:text="${check.lastCheckedAt() != null ? check.lastCheckedAt() : 'never'}">never</td>
+                <td>
+                    <div class="actions">
+                        <form th:action="@{/checks/{id}/toggle(id=${check.id()})}" method="post" style="display:inline">
+                            <button class="secondary" type="submit"
+                                    th:text="${check.enabled()} ? 'Disable' : 'Enable'">Disable</button>
+                        </form>
+                        <form th:action="@{/checks/{id}/delete(id=${check.id()})}" method="post" style="display:inline"
+                              onsubmit="return confirm('Delete this check?')">
+                            <button class="secondary" type="submit">Delete</button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="card">
+        <h2>Add check</h2>
+        <!-- Форма создания: th:object = CheckRequest из модели, отправка POST /checks
+             (обрабатывает UiController#createCheck) -->
+        <form th:action="@{/checks}" th:object="${checkRequest}" method="post">
+            <div class="form-row">
+                <div>
+                    <label for="name">Name</label>
+                    <input id="name" type="text" th:field="*{name}" placeholder="my site">
+                    <div class="error" th:if="${#fields.hasErrors('name')}" th:errors="*{name}">name error</div>
+                </div>
+                <div>
+                    <label for="url">URL</label>
+                    <input id="url" type="url" th:field="*{url}" placeholder="https://example.com">
+                    <div class="error" th:if="${#fields.hasErrors('url')}" th:errors="*{url}">url error</div>
+                </div>
+                <div>
+                    <label for="checkIntervalSeconds">Interval (seconds, min 10)</label>
+                    <input id="checkIntervalSeconds" type="number" th:field="*{checkIntervalSeconds}">
+                    <div class="error" th:if="${#fields.hasErrors('checkIntervalSeconds')}"
+                         th:errors="*{checkIntervalSeconds}">interval error</div>
+                </div>
+                <div>
+                    <label for="enabled" style="display:block; margin-top:26px">
+                        <input id="enabled" type="checkbox" th:field="*{enabled}"> Enabled
+                    </label>
+                    <div class="error" th:if="${#fields.hasErrors('enabled')}" th:errors="*{enabled}">enabled error</div>
+                </div>
+            </div>
+            <button type="submit">Add check</button>
+        </form>
+    </div>
+
+</div>
+</body>
+</html>

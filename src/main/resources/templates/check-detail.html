@@ -1,0 +1,109 @@
+<!--
+  check-detail.html — страница одного чека: статус, uptime-статистика, история.
+
+  Модель из UiController#detail:
+    check   — CheckResponse        данные чека
+    stats   — CheckStatsResponse   агрегаты за выбранное окно (hours)
+    results — PageResponse<CheckResultResponse>  последние 20 результатов
+    hours   — применённое окно в часах (1..720, параметр ?hours=...)
+
+  Переключатель окна (24h / 7d / 30d) — обычные ссылки с тем же id,
+  но разным query-параметром hours: @{/checks/{id}(id=..., hours=168)}.
+-->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head('Check details')}"></head>
+<body>
+<div th:replace="~{layout :: nav}"></div>
+<div class="container">
+
+    <p><a th:href="@{/}">&larr; Back to dashboard</a></p>
+
+    <div class="card">
+        <h1>
+            <span th:text="${check.name()}">google</span>
+            <span class="badge"
+                  th:classappend="${check.lastStatus() == null ? 'UNKNOWN' : check.lastStatus()}"
+                  th:text="${check.lastStatus() == null ? '—' : check.lastStatus()}">UP</span>
+        </h1>
+        <p>
+            <a th:href="${check.url()}" th:text="${check.url()}">https://google.com</a>
+            <span class="muted" th:text="' · every ' + ${check.checkIntervalSeconds()} + ' s'"> · every 60 s</span>
+            <span class="muted" th:if="${!check.enabled()}"> · disabled</span>
+        </p>
+
+        <h2>
+            Stats (last <span th:text="${hours}">24</span> h)
+            <span class="muted" style="font-weight:400">
+                —
+                <a th:href="@{/checks/{id}(id=${check.id()}, hours=24)}">24h</a> ·
+                <a th:href="@{/checks/{id}(id=${check.id()}, hours=168)}">7d</a> ·
+                <a th:href="@{/checks/{id}(id=${check.id()}, hours=720)}">30d</a>
+            </span>
+        </h2>
+        <!-- Сетка карточек статистики. Пустые значения (null = «нет данных»)
+             показываем прочерком, а не нулём -->
+        <div class="stats-grid">
+            <div class="stat">
+                <div class="value"
+                     th:text="${#numbers.formatDecimal(stats.uptimePercent(), 1, 2)} + '%'">100%</div>
+                <div class="label">Uptime</div>
+            </div>
+            <div class="stat">
+                <div class="value" th:text="${stats.totalChecks()}">0</div>
+                <div class="label">Checks</div>
+            </div>
+            <div class="stat">
+                <div class="value" th:text="${stats.upCount()}">0</div>
+                <div class="label">UP</div>
+            </div>
+            <div class="stat">
+                <div class="value" th:text="${stats.downCount()}">0</div>
+                <div class="label">DOWN</div>
+            </div>
+            <div class="stat">
+                <div class="value"
+                     th:text="${stats.avgResponseTimeMs() != null ? stats.avgResponseTimeMs() + ' ms' : '—'}">—</div>
+                <div class="label">Avg response</div>
+            </div>
+            <div class="stat">
+                <div class="value"
+                     th:text="${stats.maxResponseTimeMs() != null ? stats.maxResponseTimeMs() + ' ms' : '—'}">—</div>
+                <div class="label">Max response</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>Recent checks</h2>
+        <!-- История результатов: results — PageResponse, поэтому элементы в content(),
+             а счётчик страниц — totalPages()/page() -->
+        <div th:if="${#lists.isEmpty(results.content())}" class="muted">No results yet.</div>
+        <table th:unless="${#lists.isEmpty(results.content())}">
+            <thead>
+            <tr>
+                <th>Time</th>
+                <th>Status</th>
+                <th>HTTP</th>
+                <th>Response</th>
+                <th>Error</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="result : ${results.content()}">
+                <td class="muted" th:text="${result.checkedAt()}">time</td>
+                <td>
+                    <span class="badge" th:classappend="${result.status()}" th:text="${result.status()}">UP</span>
+                </td>                <td th:text="${result.httpCode() != null ? result.httpCode() : '—'}">200</td>
+                <td th:text="${result.responseTimeMs() != null ? result.responseTimeMs() + ' ms' : '—'}">42 ms</td>
+                <td class="muted" th:text="${result.errorMessage()}">error</td>
+            </tr>
+            </tbody>
+        </table>
+        <p class="muted" th:if="${results.totalPages() > 1}"
+           th:text="'Page ' + (results.page() + 1) + ' of ' + results.totalPages()">page</p>
+    </div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,56 @@
+# ============================================================
+# Конфигурация приложения (Spring Boot, профиль по умолчанию "default").
+#
+# Порядок чтения свойств Spring Boot: аргументы запуска > переменные окружения
+# > application-{profile}.yml > application.yml. Поэтому любое значение здесь
+# можно переопределить без правки файла — например, переменной окружения
+# SPRING_DATASOURCE_URL.
+#
+# Обратите внимание: в src/test/resources/application.yml лежит СВОЙ файл
+# с тем же именем — он полностью заменяет этот на тестовом classpath.
+# ============================================================
+
+spring:
+  application:
+    name: checkApp
+
+  # Подключение к PostgreSQL.
+  # localhost:5433 — порт из docker-compose.yml (5433, чтобы не конфликтовать
+  # с системным PostgreSQL на 5432). В Docker переопределяется
+  # переменной SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/checkapp
+  datasource:
+    url: jdbc:postgresql://localhost:5433/checkapp
+    username: checkapp
+    password: checkapp
+
+  jpa:
+    hibernate:
+      # validate: Hibernate только СВЕРЯЕТ сущности с таблицами в БД, но ничего
+      # не создаёт и не меняет. Схему целиком задают Flyway-миграции — так структура
+      # версионируется в git, а не «генерируется из кода».
+      ddl-auto: validate
+    # open-in-view: false — не держать EntityManager открытым на всё время рендера страницы:
+    # работаем в сервисах/репозиториях, ленивые связи не тянем в шаблонах.
+    open-in-view: false
+
+  flyway:
+    # Миграции включены: при старте Spring сам накатит db/migration/V*.sql
+    # (повторно уже применённые — пропустит, история в таблице flyway_schema_history)
+    enabled: true
+
+# Собственные свойства приложения (префикс "app", свои классы — не Spring)
+app:
+  scheduler:
+    # Фоновый планировщик: в проде true, в тестах его выключают (test/resources)
+    enabled: true
+    # Период тика в мс: каждые 10 секунд CheckScheduler смотрит, кому пора пинговать.
+    # fixedDelay считается от ЗАВЕРШЕНИЯ предыдущего тика (см. CheckScheduler)
+    tick-ms: 10000
+
+  telegram:
+    # ${TELEGRAM_BOT_TOKEN:} — подстановка из переменной окружения,
+    # двоеточие в конце = значение по умолчанию (пустая строка).
+    # Пусто => режим заглушки: алерты пишутся в лог с [telegram-stub],
+    # без запросов наружу и без секретов в репозитории.
+    bot-token: ${TELEGRAM_BOT_TOKEN:}
+    chat-id: ${TELEGRAM_CHAT_ID:}
